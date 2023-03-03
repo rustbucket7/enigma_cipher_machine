@@ -1,4 +1,4 @@
-from sys import exit
+# from sys import exit
 
 
 class Enigma:
@@ -582,22 +582,23 @@ def enigma_run(rotor_choices: tuple,
             # uppercase each letter in plugboard_pairings
             plugboard_pairings[i] = plugboard_pairings[i].upper()
 
+        # make lists as tuples
         plugboard_pairings = tuple(plugboard_pairings)
         initial_rotor_settings = tuple(initial_rotor_settings)
         ring_settings = tuple(ring_settings)
+
+        # uppercase the reflector letter
         reflector = reflector.upper()
 
         # initialize an Enigma machine
         enigma_machine = Enigma(rotor_choices, plugboard_pairings, initial_rotor_settings,
                          ring_settings, reflector)
 
-        # if no input_str was given, then prompt user for a string
-        if input_str is None:
-            # check user's text input
-            text = sanitize_input_text(input("Enter a string of letters and spaces only: "))
-            # cipher_print(enigma1.encrypt_decrypt(text))
+        # if input_str was invalid, return string saying so
+        if input_str is None or input_str.isalpha() is False:
+            return "Bad input string. Letters only."
 
-        # otherwise, feed input_str into enigma_machine
+        # otherwise, ready input_str to feed into enigma_machine
         else:
             text = sanitize_input_text(input_str)
 
@@ -605,7 +606,7 @@ def enigma_run(rotor_choices: tuple,
         return enigma_machine.encrypt_decrypt(text)
 
     else:
-        exit("Bad Enigma settings")
+        return "Bad Enigma settings"
 
 
 if __name__ == '__main__':
@@ -615,6 +616,9 @@ if __name__ == '__main__':
     ring_settings = ["B", "U", "L"]  # ordering is left-middle-right rotors
     reflector = 'B'
 
+    user_input = sanitize_input_text(input("Enter a string of letters and spaces only: "))
+    # user_input = "  "
+
     print(enigma_run(rotor_choices, plugboard_pairings, initial_rotor_settings,
-                     ring_settings, reflector))
+                     ring_settings, reflector, user_input))
     input("...Press any key to end the program...")

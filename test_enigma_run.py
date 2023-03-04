@@ -158,7 +158,7 @@ class TestEnigma(unittest.TestCase):
         initial_rotor_settings = ['A', 'B', 'L']
         ring_settings = [24, 13, 22]
         reflector = 'A'
-        input_str = ""
+        input_str = "aaa"
         error_msg = "Bad Enigma settings"
 
         self.assertEqual(enigma_run(rotor_choices, plugboard_pairings,
@@ -174,7 +174,7 @@ class TestEnigma(unittest.TestCase):
         initial_rotor_settings = ['A', 'B', 'L']
         ring_settings = [24, 13, 22]
         reflector = 'A'
-        input_str = ""
+        input_str = "aaa"
         error_msg = "Bad Enigma settings"
 
         self.assertEqual(enigma_run(rotor_choices, plugboard_pairings,
@@ -190,7 +190,7 @@ class TestEnigma(unittest.TestCase):
         initial_rotor_settings = ['A', 'B', 'L']
         ring_settings = [24, 13, 22]
         reflector = 'A'
-        input_str = ""
+        input_str = "aaa"
         error_msg = "Bad Enigma settings"
 
         self.assertEqual(enigma_run(rotor_choices, plugboard_pairings,
@@ -206,7 +206,7 @@ class TestEnigma(unittest.TestCase):
         initial_rotor_settings = ['A', 'B']
         ring_settings = [24, 13, 22]
         reflector = 'A'
-        input_str = ""
+        input_str = "aaa"
         error_msg = "Bad Enigma settings"
 
         self.assertEqual(enigma_run(rotor_choices, plugboard_pairings,
@@ -222,7 +222,7 @@ class TestEnigma(unittest.TestCase):
         initial_rotor_settings = ['A', 'B', 'L', 'Z']
         ring_settings = [24, 13, 22]
         reflector = 'A'
-        input_str = ""
+        input_str = "aaa"
         error_msg = "Bad Enigma settings"
 
         self.assertEqual(enigma_run(rotor_choices, plugboard_pairings,
@@ -238,7 +238,7 @@ class TestEnigma(unittest.TestCase):
         initial_rotor_settings = ['A', 'B', 'L']
         ring_settings = [24, 13]
         reflector = 'A'
-        input_str = ""
+        input_str = "aaa"
         error_msg = "Bad Enigma settings"
 
         self.assertEqual(enigma_run(rotor_choices, plugboard_pairings,
@@ -254,7 +254,7 @@ class TestEnigma(unittest.TestCase):
         initial_rotor_settings = ['A', 'B', 'L']
         ring_settings = [24, 13, 22, 20]
         reflector = 'A'
-        input_str = ""
+        input_str = "aaa"
         error_msg = "Bad Enigma settings"
 
         self.assertEqual(enigma_run(rotor_choices, plugboard_pairings,
@@ -270,7 +270,7 @@ class TestEnigma(unittest.TestCase):
         initial_rotor_settings = ['A', 'B', 'L']
         ring_settings = [24, 13, 22]
         reflector = 'Z'
-        input_str = ""
+        input_str = "aaa"
         error_msg = "Bad Enigma settings"
 
         self.assertEqual(enigma_run(rotor_choices, plugboard_pairings,
@@ -286,7 +286,7 @@ class TestEnigma(unittest.TestCase):
         initial_rotor_settings = ['A', 'B', 'L']
         ring_settings = [24, 13, 22]
         reflector = 'ZB'
-        input_str = ""
+        input_str = "aaa"
         error_msg = "Bad Enigma settings"
 
         self.assertEqual(enigma_run(rotor_choices, plugboard_pairings,

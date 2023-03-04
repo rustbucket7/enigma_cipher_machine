@@ -280,7 +280,6 @@ class Enigma:
         for letter in input_text:
             # advance rotor
             self.advance_rotors()
-            # print("rotors advanced to:", self.rotor_pos)  # testing...
 
             # 1st plugboard substitution
             converted_letter = self.plugboard_cipher(letter)
@@ -296,7 +295,6 @@ class Enigma:
 
             # 2nd plugboard substitution
             converted_letter = self.plugboard_cipher(converted_letter)
-            # print()  # testing...
 
             # add converted_letter to output_text
             output_text += converted_letter
@@ -483,26 +481,31 @@ def sanitize_input_text(input_text: str):
 
     :return: str
     """
+    # if no input_text received, return False
+    if input_text is None:
+        return False
+
+    # remove all spaces from input_str
+    input_text = "".join(input_text.split())
+
+    # if after removing all empty spaces, there is no message left, return False
+    if len(input_text) == 0:
+        return False
+
     sanitized_text = ""
 
+    # check every character in input_text for any invalid characters
     for i in range(len(input_text)):
         letter = input_text[i]
 
-        # if an incorrect character is found, display an error message
-        # and exit the program
-        if not letter.isalpha() and letter != " ":
-            error_str = "Invalid character: " + letter + ', ' + \
-                     "Found at index: " + str(i)
-            exit(error_str)
+        # if an incorrect character is found, return False
+        if letter.isalpha() is False:
+            return False
 
-        # or if an empty space is found, skip it
-        elif letter == " ":
-            continue
-
-        # if not a bad letter, add letter to sanitized_text
+        # if not a bad character, capitalize it and add it to sanitized_text
         sanitized_text += letter.upper()
 
-    # otherwise, if no bad inputs found, return sanitized_text
+    # if no bad characters found, return sanitized_text
     return sanitized_text
 
 
@@ -539,15 +542,23 @@ def enigma_run(rotor_choices: tuple,
     """
     Main program function:
 
-    1) Check if Enigma settings are valid
-    2) Finalize formatting of Enigma settings
-    3) Check if an input string was received
-    4) Send input string to sanitize_input_text()
-    5) Perform encrypt_decrypt() on sanitized text
-    6) Output the ciphertext
+    1) Check if input string is valid
+    2) Send input string to sanitize_input_text()
+    3) Check if Enigma settings are valid
+    4) Finalize formatting of Enigma settings
+    5) Initialize an Enigma machine
+    6) Perform encrypt_decrypt() on sanitized text
+    7) Output the ciphertext
     """
 
-    # if Enigma settings are valid, ask user for input text
+    # check if input_str is valid, if it is invalid, return a message saying input is bad
+    text = sanitize_input_text(input_str)
+
+    if text is False:
+        return "Bad input string. Letters only."
+
+    # if Enigma settings are valid
+    # if they are, initialize an enigma_machine
     if sanitize_enigma_settings(rotor_choices, plugboard_pairings, initial_rotor_settings,
                          ring_settings, reflector):
 
@@ -568,19 +579,12 @@ def enigma_run(rotor_choices: tuple,
         enigma_machine = Enigma(rotor_choices, plugboard_pairings, initial_rotor_settings,
                          ring_settings, reflector)
 
-        # if input_str was invalid, return string saying so
-        if input_str is None or input_str.isalpha() is False:
-            return "Bad input string. Letters only."
-
-        # otherwise, ready input_str to feed into enigma_machine
-        else:
-            text = sanitize_input_text(input_str)
-
-        # run enigma_machine, return encrypted/decrypted text
-        return enigma_machine.encrypt_decrypt(text)
-
+    # otherwise, we have bad Enigma settings
     else:
         return "Bad Enigma settings"
+
+    # finally, run enigma_machine, return encrypted/decrypted text
+    return enigma_machine.encrypt_decrypt(text)
 
 
 if __name__ == '__main__':

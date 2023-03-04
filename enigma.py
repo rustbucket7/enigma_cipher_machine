@@ -146,9 +146,6 @@ class Enigma:
             all_other_letters = rotated_str[:len(rotated_str) - 1]
             rotated_str = last_letter + all_other_letters
 
-        # print("rotated_str:",
-        #       rotated_str, "from:",
-        #       rotor_output_str)  # testing...
         return rotated_str
 
     def advance_rotors(self):
@@ -194,12 +191,8 @@ class Enigma:
         If a letter was not assigned a cipher pair, return itself.
         """
         try:
-            # print("plugboard cipher of", letter,
-            #       "is:", self.plugboard[letter])  # testing...
             return self.plugboard[letter]
         except KeyError:
-            # print("plugboard cipher of", letter,
-            #       "is:", letter)  # testing...
             return letter
 
     def right_to_left_cipher(self,
@@ -212,8 +205,6 @@ class Enigma:
         """
         # Base case - when all rotors have been performed their ciphers
         if curr_rotor_i < 0:
-            # print("cipher right-to-left before reflector cipher is:",
-            #       letter)  # testing...
             return letter
 
         # Find index of letter on input-side
@@ -226,9 +217,6 @@ class Enigma:
                            curr_rotor_pos_i -
                            prev_rotor_pos) % 26
         output_letter = self.rotors_used[curr_rotor_i][0][output_letter_i]
-        # print("rotor", curr_rotor_i,
-        #       "input is:", letter, input_letter_i,
-        #       "output is:", output_letter, output_letter_i)  # testing...
 
         # recursive calls to go through each rotor
         return self.right_to_left_cipher(output_letter, curr_rotor_pos_i,
@@ -243,8 +231,7 @@ class Enigma:
         prev_rotor_ptr = self.rotor_pos[0]  # only need to know left rotor pos
         reflector_letter_i = (input_letter_i - prev_rotor_ptr) % 26
         reflector_letter = self.reflector[reflector_letter_i]
-        # print("reflector of", letter,
-        #       "back to left rotor is:", reflector_letter)  # testing...
+
         return reflector_letter
 
     def left_to_right_cipher(self,
@@ -264,10 +251,7 @@ class Enigma:
             # calculate index of input letter
             letter_i = (input_letter_i - prev_rotor_pos) % 26
             letter = self.rotor_reflector_wheel[letter_i]
-            # print("right rotor - input wheel output is:",
-            #       letter, letter_i)  # testing...
-            # print("cipher left-to-right to input wheel is:",
-            #       letter)  # testing...
+
             return letter
 
         # Find index of letter
@@ -279,9 +263,6 @@ class Enigma:
                         curr_rotor_pos -
                         prev_rotor_pos) % 26
         rev_output_letter = self.rotors_used[curr_rotor_i][1][rev_output_i]
-        # print("rotor", curr_rotor_i,
-        #       "input is:", letter, input_letter_i,
-        #       "output is:", rev_output_letter, rev_output_i)  # testing...
 
         # recursive calls to go through each rotor
         return self.left_to_right_cipher(rev_output_letter, curr_rotor_pos,
@@ -374,7 +355,7 @@ def check_plugboard_pairings(plugboard_pairings: list):
             return False
 
         # if pairing letters are not a letter, return False
-        elif not pairing[0].isalpha() or not pairing[1].isalpha():
+        elif pairing[0].isalpha() is False or pairing[1].isalpha() is False:
             return False
 
         # if both letters in the pairing are the same, return False
@@ -440,8 +421,8 @@ def check_reflector(reflector: str):
     if len(reflector) != 1:
         return False
 
-    # if reflector is not a str, return False
-    if not isinstance(reflector, str):
+    # if reflector is not a str or is not a letter, return False
+    if not isinstance(reflector, str) or reflector.isalpha() is False:
         return False
 
     # if reflect is not 'A', 'B', or 'C', return False
@@ -470,29 +451,22 @@ def sanitize_enigma_settings(rotor_choices: tuple,
 
     # check rotor_choices
     if not check_rotor_choices(rotor_choices):
-        # print("Bad rotor_choices")  # testing...
         return False
 
     # check plugboard_pairings
     elif not check_plugboard_pairings(plugboard_pairings):
-        # print("Bad plugboard_pairings")  # testing...
         return False
 
     # check initial_rotor_settings
-    #elif not check_initial_rotor_settings(initial_rotor_settings):
     elif not check_rotor_ring_settings(initial_rotor_settings):
-        # print("Bad rotor_settings")  # testing...
         return False
 
     # check ring_settings
-    #elif not check_ring_settings(ring_settings):
     elif not check_rotor_ring_settings(ring_settings):
-        # print("Bad ring_settings")  # testing...
         return False
 
     # check reflector
     elif not check_reflector(reflector):
-        # print("Bad reflector")  # testing...
         return False
 
     # if no checks failed, then Enigma settings must be correct, return True
@@ -563,12 +537,12 @@ def enigma_run(rotor_choices: tuple,
                reflector: str,
                input_str: str = None):
     """
-    Main program function (to be updated):
+    Main program function:
 
     1) Check if Enigma settings are valid
     2) Finalize formatting of Enigma settings
-    3) Have user give an input string
-    4) Send input to sanitize_input_text()
+    3) Check if an input string was received
+    4) Send input string to sanitize_input_text()
     5) Perform encrypt_decrypt() on sanitized text
     6) Output the ciphertext
     """

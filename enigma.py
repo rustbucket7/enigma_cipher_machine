@@ -1,4 +1,4 @@
-from sys import exit
+# from sys import exit
 
 
 class Enigma:
@@ -146,9 +146,6 @@ class Enigma:
             all_other_letters = rotated_str[:len(rotated_str) - 1]
             rotated_str = last_letter + all_other_letters
 
-        # print("rotated_str:",
-        #       rotated_str, "from:",
-        #       rotor_output_str)  # testing...
         return rotated_str
 
     def advance_rotors(self):
@@ -194,12 +191,8 @@ class Enigma:
         If a letter was not assigned a cipher pair, return itself.
         """
         try:
-            # print("plugboard cipher of", letter,
-            #       "is:", self.plugboard[letter])  # testing...
             return self.plugboard[letter]
         except KeyError:
-            # print("plugboard cipher of", letter,
-            #       "is:", letter)  # testing...
             return letter
 
     def right_to_left_cipher(self,
@@ -212,8 +205,6 @@ class Enigma:
         """
         # Base case - when all rotors have been performed their ciphers
         if curr_rotor_i < 0:
-            # print("cipher right-to-left before reflector cipher is:",
-            #       letter)  # testing...
             return letter
 
         # Find index of letter on input-side
@@ -226,9 +217,6 @@ class Enigma:
                            curr_rotor_pos_i -
                            prev_rotor_pos) % 26
         output_letter = self.rotors_used[curr_rotor_i][0][output_letter_i]
-        # print("rotor", curr_rotor_i,
-        #       "input is:", letter, input_letter_i,
-        #       "output is:", output_letter, output_letter_i)  # testing...
 
         # recursive calls to go through each rotor
         return self.right_to_left_cipher(output_letter, curr_rotor_pos_i,
@@ -243,8 +231,7 @@ class Enigma:
         prev_rotor_ptr = self.rotor_pos[0]  # only need to know left rotor pos
         reflector_letter_i = (input_letter_i - prev_rotor_ptr) % 26
         reflector_letter = self.reflector[reflector_letter_i]
-        # print("reflector of", letter,
-        #       "back to left rotor is:", reflector_letter)  # testing...
+
         return reflector_letter
 
     def left_to_right_cipher(self,
@@ -264,10 +251,7 @@ class Enigma:
             # calculate index of input letter
             letter_i = (input_letter_i - prev_rotor_pos) % 26
             letter = self.rotor_reflector_wheel[letter_i]
-            # print("right rotor - input wheel output is:",
-            #       letter, letter_i)  # testing...
-            # print("cipher left-to-right to input wheel is:",
-            #       letter)  # testing...
+
             return letter
 
         # Find index of letter
@@ -279,9 +263,6 @@ class Enigma:
                         curr_rotor_pos -
                         prev_rotor_pos) % 26
         rev_output_letter = self.rotors_used[curr_rotor_i][1][rev_output_i]
-        # print("rotor", curr_rotor_i,
-        #       "input is:", letter, input_letter_i,
-        #       "output is:", rev_output_letter, rev_output_i)  # testing...
 
         # recursive calls to go through each rotor
         return self.left_to_right_cipher(rev_output_letter, curr_rotor_pos,
@@ -299,7 +280,6 @@ class Enigma:
         for letter in input_text:
             # advance rotor
             self.advance_rotors()
-            # print("rotors advanced to:", self.rotor_pos)  # testing...
 
             # 1st plugboard substitution
             converted_letter = self.plugboard_cipher(letter)
@@ -315,7 +295,6 @@ class Enigma:
 
             # 2nd plugboard substitution
             converted_letter = self.plugboard_cipher(converted_letter)
-            # print()  # testing...
 
             # add converted_letter to output_text
             output_text += converted_letter
@@ -374,7 +353,7 @@ def check_plugboard_pairings(plugboard_pairings: list):
             return False
 
         # if pairing letters are not a letter, return False
-        elif not pairing[0].isalpha() or not pairing[1].isalpha():
+        elif pairing[0].isalpha() is False or pairing[1].isalpha() is False:
             return False
 
         # if both letters in the pairing are the same, return False
@@ -440,8 +419,8 @@ def check_reflector(reflector: str):
     if len(reflector) != 1:
         return False
 
-    # if reflector is not a str, return False
-    if not isinstance(reflector, str):
+    # if reflector is not a str or is not a letter, return False
+    if not isinstance(reflector, str) or reflector.isalpha() is False:
         return False
 
     # if reflect is not 'A', 'B', or 'C', return False
@@ -470,29 +449,22 @@ def sanitize_enigma_settings(rotor_choices: tuple,
 
     # check rotor_choices
     if not check_rotor_choices(rotor_choices):
-        # print("Bad rotor_choices")  # testing...
         return False
 
     # check plugboard_pairings
     elif not check_plugboard_pairings(plugboard_pairings):
-        # print("Bad plugboard_pairings")  # testing...
         return False
 
     # check initial_rotor_settings
-    #elif not check_initial_rotor_settings(initial_rotor_settings):
     elif not check_rotor_ring_settings(initial_rotor_settings):
-        # print("Bad rotor_settings")  # testing...
         return False
 
     # check ring_settings
-    #elif not check_ring_settings(ring_settings):
     elif not check_rotor_ring_settings(ring_settings):
-        # print("Bad ring_settings")  # testing...
         return False
 
     # check reflector
     elif not check_reflector(reflector):
-        # print("Bad reflector")  # testing...
         return False
 
     # if no checks failed, then Enigma settings must be correct, return True
@@ -509,26 +481,31 @@ def sanitize_input_text(input_text: str):
 
     :return: str
     """
+    # if no input_text received, return False
+    if input_text is None:
+        return False
+
+    # remove all spaces from input_str
+    input_text = "".join(input_text.split())
+
+    # if after removing all empty spaces, there is no message left, return False
+    if len(input_text) == 0:
+        return False
+
     sanitized_text = ""
 
+    # check every character in input_text for any invalid characters
     for i in range(len(input_text)):
         letter = input_text[i]
 
-        # if an incorrect character is found, display an error message
-        # and exit the program
-        if not letter.isalpha() and letter != " ":
-            error_str = "Invalid character: " + letter + ', ' + \
-                     "Found at index: " + str(i)
-            exit(error_str)
+        # if an incorrect character is found, return False
+        if letter.isalpha() is False:
+            return False
 
-        # or if an empty space is found, skip it
-        elif letter == " ":
-            continue
-
-        # if not a bad letter, add letter to sanitized_text
+        # if not a bad character, capitalize it and add it to sanitized_text
         sanitized_text += letter.upper()
 
-    # otherwise, if no bad inputs found, return sanitized_text
+    # if no bad characters found, return sanitized_text
     return sanitized_text
 
 
@@ -563,17 +540,25 @@ def enigma_run(rotor_choices: tuple,
                reflector: str,
                input_str: str = None):
     """
-    Main program function (to be updated):
+    Main program function:
 
-    1) Check if Enigma settings are valid
-    2) Finalize formatting of Enigma settings
-    3) Have user give an input string
-    4) Send input to sanitize_input_text()
-    5) Perform encrypt_decrypt() on sanitized text
-    6) Output the ciphertext
+    1) Check if input string is valid
+    2) Send input string to sanitize_input_text()
+    3) Check if Enigma settings are valid
+    4) Finalize formatting of Enigma settings
+    5) Initialize an Enigma machine
+    6) Perform encrypt_decrypt() on sanitized text
+    7) Output the ciphertext
     """
 
-    # if Enigma settings are valid, ask user for input text
+    # check if input_str is valid, if it is invalid, return a message saying input is bad
+    text = sanitize_input_text(input_str)
+
+    if text is False:
+        return "Bad input string. Letters only."
+
+    # if Enigma settings are valid
+    # if they are, initialize an enigma_machine
     if sanitize_enigma_settings(rotor_choices, plugboard_pairings, initial_rotor_settings,
                          ring_settings, reflector):
 
@@ -582,30 +567,24 @@ def enigma_run(rotor_choices: tuple,
             # uppercase each letter in plugboard_pairings
             plugboard_pairings[i] = plugboard_pairings[i].upper()
 
+        # make lists as tuples
         plugboard_pairings = tuple(plugboard_pairings)
         initial_rotor_settings = tuple(initial_rotor_settings)
         ring_settings = tuple(ring_settings)
+
+        # uppercase the reflector letter
         reflector = reflector.upper()
 
         # initialize an Enigma machine
         enigma_machine = Enigma(rotor_choices, plugboard_pairings, initial_rotor_settings,
                          ring_settings, reflector)
 
-        # if no input_str was given, then prompt user for a string
-        if input_str is None:
-            # check user's text input
-            text = sanitize_input_text(input("Enter a string of letters and spaces only: "))
-            # cipher_print(enigma1.encrypt_decrypt(text))
-
-        # otherwise, feed input_str into enigma_machine
-        else:
-            text = sanitize_input_text(input_str)
-
-        # run enigma_machine, return encrypted/decrypted text
-        return enigma_machine.encrypt_decrypt(text)
-
+    # otherwise, we have bad Enigma settings
     else:
-        exit("Bad Enigma settings")
+        return "Bad Enigma settings"
+
+    # finally, run enigma_machine, return encrypted/decrypted text
+    return enigma_machine.encrypt_decrypt(text)
 
 
 if __name__ == '__main__':
@@ -615,6 +594,9 @@ if __name__ == '__main__':
     ring_settings = ["B", "U", "L"]  # ordering is left-middle-right rotors
     reflector = 'B'
 
+    user_input = sanitize_input_text(input("Enter a string of letters and spaces only: "))
+    # user_input = "  "
+
     print(enigma_run(rotor_choices, plugboard_pairings, initial_rotor_settings,
-                     ring_settings, reflector))
+                     ring_settings, reflector, user_input))
     input("...Press any key to end the program...")

@@ -18,7 +18,7 @@ The encrypt/decrypt process looks like this:
 
 Altogether, each letter in the input message can be changed up to 9 times.
 
-## How to Use (TO BE CHANGED)
+## How to Use via Command line/Terminal
 To encrypt a message:
 - Setup Enigma machine
 - Run the program
@@ -37,12 +37,26 @@ Setting up the Enigma machine:
 1. Open the enigma.py file in an IDE or text editor
 2. Scroll down to the bottom of the file where `if __name__ == '__main__':` is found
 3. Change the following settings to suit your encryption/decryption needs:
-- rotor_choices: the order of your rotors from left to right. Requires three rotors to be used. Ex. [2, 1, 3].
-- plugboard: the pairs of letters that will get swapped at the plugboard. Ex. ["GZ", "YQ", "OP", "LA"].
-- initial_rotor_settings: sets the starting position of each rotor. Ex. "RAO".
-- ring_settings: sets the desired ciphering for each rotor. Ex. "BMX".
-- reflector: choose which reflector to use. Ex. "A".
-4. Run the program using Python 3 to begin encrypting/decrypting a message
+- rotor_choices: the order of your rotors from left to right. Requires three unique rotors to be used. Ex. (2, 1, 3).
+- plugboard_pairings: the pairs of letters that will get swapped at the plugboard. Letters can only be used once. Ex. ["GZ", "YQ", "OP", "LA"].
+- initial_rotor_settings: sets the starting position of each rotor. Ex. ['R', 'A', 'O'].
+- ring_settings: sets the desired ciphering for each rotor. Ex. ['B', 'M', 'X'].
+- reflector: choose which reflector to use. Ex. 'A'.
+4.  Run the program using Python 3 to begin encrypting/decrypting a message
+
+## How to Use in Another Python Program
+1. Put enigma.py into some directory usable by your Python program
+2. Import the file into your program. Ex. "from enigma import *"
+3. Perform encrypt/decrypt with the following call:
+- enigma_run(arg1, arg2, ..., arg6)
+- - The following 6 arguments are required in the following order:
+- - - rotor_choices (tuple, length 3): the order of your rotors from left to right. Requires three unique rotors to be used. Ex. (2, 1, 3).
+- - - plugboard_pairings (list, any length): the pairs of letters that will get swapped at the plugboard. Letters can only be used once. Ex. ["GZ", "YQ", "OP", "LA"].
+- - - initial_rotor_settings (list, length 3): sets the starting position of each rotor. Ex. ['R', 'A', 'O'].
+- - - ring_settings (list, length 3): sets the desired ciphering for each rotor. Ex. ['B', 'M', 'X'].
+- - - reflector (str, length 1): choose which reflector to use. Ex. 'A'.
+- - - input_str (str, length > 0): a string of LETTERS you want to encrypt/decrypt using the settings above. Letters can be upper or lowercase (return value will only be uppercase letters). Ex. "abcdef ghijklmn"
+4. You can capture the output by setting enigma_run(...) within a variable or printing it out. Ex. "var1 = enigma_run(...)" or "print(enigma_run(...))"
 
 ## Helpful Links
 [How the Enigma Works](https://www.youtube.com/watch?v=ybkkiGtJmkM)

@@ -1,4 +1,5 @@
 # from sys import exit
+from plugboard import *
 
 
 class Enigma:
@@ -11,7 +12,7 @@ class Enigma:
 
     def __init__(self,
                  settings_rotor_choices: tuple,
-                 settings_plugboard_pairings: tuple,
+                 settings_plugboard_pairings: tuple,  # tuple(ab, cd, ...)
                  settings_starting_rotor_pos: tuple,
                  settings_ring: tuple,
                  settings_reflector: str):
@@ -19,7 +20,6 @@ class Enigma:
 
         # grab initial settings when an Enigma object is initialized
         self.rotor_order = settings_rotor_choices  # tuple(1,2,3)
-        self.settings_plugboard_pairings = settings_plugboard_pairings  # tuple(ab, cd, ...)
         self.starting_rotor_pos = settings_starting_rotor_pos  # XXX
         self.settings_ring = settings_ring  # XXX
         self.settings_reflector = settings_reflector  # X
@@ -49,7 +49,7 @@ class Enigma:
         self.rotor_pos = [0, 0, 0]
 
         # setup plugboard and reflector based on initialized settings
-        self.plugboard = self.set_plugboard()  # ex. {"EA": "GM", "GM":"EA"}
+        self.plugboard = Plugboard(settings_plugboard_pairings)  # ex. {"EA": "GM", "GM":"EA"}
         self.reflector = self.set_reflector(self.settings_reflector)  # ex. "B"
         self.rotors_used = self.set_rotors()  # ex. [3,1,5]
 
@@ -79,18 +79,6 @@ class Enigma:
     #     return self.reflector
 
     # enigma machine methods here
-    def set_plugboard(self) -> dict:
-        """ Set plugboard based on received settings. """
-        plugboard_final_settings = dict()
-
-        for letter_pair in self.settings_plugboard_pairings:
-            first_letter = letter_pair[0]
-            second_letter = letter_pair[1]
-            plugboard_final_settings[first_letter] = second_letter
-            plugboard_final_settings[second_letter] = first_letter
-
-        return plugboard_final_settings
-
     def set_reflector(self, reflector_to_use: str) -> str:
         """
         Set reflector variable to the desired reflector output pairings.
@@ -184,17 +172,6 @@ class Enigma:
         if left_rotor_step is True:
             self.rotor_pos[0] = (self.rotor_pos[0] + 1) % 26
 
-    def plugboard_cipher(self, letter: str) -> str:
-        """
-        Perform substitution cipher of a letter going through the plugboard.
-
-        If a letter was not assigned a cipher pair, return itself.
-        """
-        try:
-            return self.plugboard[letter]
-        except KeyError:
-            return letter
-
     def right_to_left_cipher(self,
                              letter: str,
                              prev_rotor_pos: int = 0,
@@ -282,7 +259,7 @@ class Enigma:
             self.advance_rotors()
 
             # 1st plugboard substitution
-            converted_letter = self.plugboard_cipher(letter)
+            converted_letter = self.plugboard.plugboard_cipher(letter)
 
             # 1st pass substitution through rotors
             converted_letter = self.right_to_left_cipher(converted_letter)
@@ -294,7 +271,7 @@ class Enigma:
             converted_letter = self.left_to_right_cipher(converted_letter)
 
             # 2nd plugboard substitution
-            converted_letter = self.plugboard_cipher(converted_letter)
+            converted_letter = self.plugboard.plugboard_cipher(converted_letter)
 
             # add converted_letter to output_text
             output_text += converted_letter

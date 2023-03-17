@@ -3,8 +3,10 @@ class Plugboard:
     Defines a class simulating the function of an Enigma plugboard. The plugboard swaps an input letter with its
     assigned pair when the Enigma machine was initially set up.
     """
+
     def __init__(self, settings_plugboard_pairings: tuple):
         """ Set plugboard based on received settings. """
+
         self.settings_plugboard_pairings = settings_plugboard_pairings
         self.plugboard = dict()
 

@@ -1,5 +1,6 @@
-# from sys import exit
 from plugboard import *
+from reflector import *
+from rotor import *
 
 
 class Enigma:
@@ -11,46 +12,22 @@ class Enigma:
     """
 
     def __init__(self,
-                 settings_rotor_choices: tuple,
+                 settings_rotor_choices: tuple,  # (1, 2, 3)
                  settings_plugboard_pairings: tuple,  # tuple(ab, cd, ...)
-                 settings_starting_rotor_pos: tuple,
-                 settings_ring: tuple,
-                 settings_reflector: str):
+                 settings_starting_rotor_pos: tuple,  # ('X', 'X', 'X')
+                 settings_ring: tuple,  # ('X', 'X', 'X')
+                 settings_reflector: str):  # 'X'
+
         """ Define initial variable values of an Enigma object. """
 
         # grab initial settings when an Enigma object is initialized
         self.rotor_order = settings_rotor_choices  # tuple(1,2,3)
-        self.starting_rotor_pos = settings_starting_rotor_pos  # XXX
-        self.settings_ring = settings_ring  # XXX
-        self.settings_reflector = settings_reflector  # X
-
-        # input-output letter pairings for each rotor and the reflector
-        self.rotor_reflector_wheel = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-
-        # rotor 1 to 5's output pairings organized as:
-        # output (R-L), output (L-R, aka reverse output), turnover point
-        self.rotor_options = [
-            ["EKMFLGDQVZNTOWYHXUSPAIBRCJ", "UWYGADFPVZBECKMTHXSLRINQOJ", "Q"],
-            ["AJDKSIRUXBLHWTMCQGZNPYFVOE", "AJPCZWRLFBDKOTYUQGENHXMIVS", "E"],
-            ["BDFHJLCPRTXVZNYEIWGAKMUSQO", "TAGBPCSDQEUFVNZHYIXJWLRKOM", "V"],
-            ["ESOVPZJAYQUIRHXLNFTGKDCMWB", "HZWVARTNLGUPXQCEJMBSKDYOIF", "J"],
-            ["VZBRGITYUPSDNHLXAWMJQOFECK", "QCYLXWENFTZOSMVJUDKGIARPHB", "Z"]
-        ]
-
-        # reflectors A to C's output pairings
-        self.reflector_options = {
-            'A': "EJMZALYXVBWFCRQUONTSPIKHGD",
-            'B': "YRUHQSLDPXNGOKMIEBFZCWVJAT",
-            'C': "FVPJIAOYEDRZXWGCTKUQSBNMHL"
-        }
-
-        # set rotors to default starting position from left to right (0 = A)
-        # i.e. [left_rotor, middle_rotor, right_rotor]
-        self.rotor_pos = [0, 0, 0]
+        self.starting_rotor_pos = settings_starting_rotor_pos  # ('X', 'X', 'X')
+        self.settings_ring = settings_ring  # ('X', 'X', 'X')
 
         # setup plugboard and reflector based on initialized settings
         self.plugboard = Plugboard(settings_plugboard_pairings)  # ex. {"EA": "GM", "GM":"EA"}
-        self.reflector = self.set_reflector(self.settings_reflector)  # ex. "B"
+        self.reflector = Reflector(settings_reflector)  # ex. "B"
         self.rotors_used = self.set_rotors()  # ex. [3,1,5]
 
     # # test methods here
@@ -79,171 +56,82 @@ class Enigma:
     #     return self.reflector
 
     # enigma machine methods here
-    def set_reflector(self, reflector_to_use: str) -> str:
-        """
-        Set reflector variable to the desired reflector output pairings.
-        """
-        return self.reflector_options[reflector_to_use]
-
     def set_rotors(self) -> list:
-        """
-        Set the starting positions of the Enigma rotors and determine
-        which rotor outputs to use as well as their ring setting alteration
-        based on user settings.
-        """
+        """ Set the starting positions of the Enigma rotors and determine which rotor outputs to use as well as their
+        ring setting alteration based on user settings. """
+
         rotor_outputs_to_use = []
 
-        # set rotor starting positions
+        # configure each chosen rotor based on desired starting position and ring setting letter
         for i in range(3):
-            rotor_pos = self.starting_rotor_pos[i]
-            starting_pos_i = self.rotor_reflector_wheel.index(rotor_pos)
-            self.rotor_pos[i] = starting_pos_i
+            new_rotor = Rotor(rotor_chosen=self.rotor_order[i],
+                              starting_rotor_pos_letter=self.starting_rotor_pos[i],
+                              ring_setting_letter=self.settings_ring[i])
+            rotor_outputs_to_use.append(new_rotor)
 
-        # add required rotor output info to rotor_outputs_to_use[] based on
-        # user-specified rotor_order
-        for i in range(len(self.rotor_order)):
-            curr_rotor = self.rotor_options[self.rotor_order[i] - 1].copy()
-            curr_ring_setting = self.settings_ring[i]
-            for j in range(2):
-                curr_rotor[j] = self.ring_setting_rewiring(curr_rotor[j],
-                                                           curr_ring_setting)
-
-            rotor_outputs_to_use.append(curr_rotor)
-
-        return rotor_outputs_to_use
-
-    def ring_setting_rewiring(self, rotor_output_str: str, ring_letter: str):
-        """
-        Alters a rotor's output pairings based on desired ring setting letter.
-        """
-        ring_letter_i = self.rotor_reflector_wheel.index(ring_letter)
-        dot_position = (rotor_output_str.index("A") + ring_letter_i) % 26
-        shifted_str = ""
-
-        # shift up each letters in rotor_output_str
-        for i in range(len(rotor_output_str)):
-            letter_i = self.rotor_reflector_wheel.index(rotor_output_str[i])
-            shifted_str += self.rotor_reflector_wheel[(letter_i +
-                                                       ring_letter_i) % 26]
-
-        # rotate letters in shifted rotor_output_str until ring_letter is in
-        # the index position of dot_position
-        rotated_str = shifted_str
-        while rotated_str[dot_position] != ring_letter:
-            last_letter = rotated_str[len(rotated_str) - 1]
-            all_other_letters = rotated_str[:len(rotated_str) - 1]
-            rotated_str = last_letter + all_other_letters
-
-        return rotated_str
+        return rotor_outputs_to_use  # list of 3 Rotor objects
 
     def advance_rotors(self):
-        """
-        Check if more than 1 rotor needs to move.
-        Then move right rotor forward 1 step.
-        """
-        middle_rotor_step = False
-        left_rotor_step = False
+        """ Check if more than 1 rotor needs to move. Then move right rotor forward 1 step. """
 
-        # check if right rotor letter will cause middle rotor to turn
-        rotor_letter = self.rotor_reflector_wheel[self.rotor_pos[2]]
-        if rotor_letter in self.rotors_used[2][2]:
-            middle_rotor_step = True
-
-        # check if middle rotor letter will cause left rotor to turn
-        # also determines when the middle rotor will turn on its own
-        rotor_letter = self.rotor_reflector_wheel[self.rotor_pos[1]]
-        if rotor_letter in self.rotors_used[1][2]:
-            middle_rotor_step = True
-            left_rotor_step = True
-
-        # check if left rotor letter will cause it to turn itself
-        rotor_letter = self.rotor_reflector_wheel[self.rotor_pos[0]]
-        if rotor_letter in self.rotors_used[0][2]:
-            left_rotor_step = True
+        middle_rotor_step = self.rotors_used[2].check_to_step_adjacent_rotor()
+        left_rotor_step = self.rotors_used[1].check_to_step_adjacent_rotor()
 
         # step right rotor (always occurs)
-        self.rotor_pos[2] = (self.rotor_pos[2] + 1) % 26
+        self.rotors_used[2].step_rotor()
 
         # step the middle rotor if possible
         if middle_rotor_step is True:
-            self.rotor_pos[1] = (self.rotor_pos[1] + 1) % 26
+            self.rotors_used[1].step_rotor()
 
         # step the left rotor if possible
         if left_rotor_step is True:
-            self.rotor_pos[0] = (self.rotor_pos[0] + 1) % 26
+            self.rotors_used[0].step_rotor()
 
-    def right_to_left_cipher(self,
-                             letter: str,
-                             prev_rotor_pos: int = 0,
-                             curr_rotor_i: int = 2):
-        """
-        First set of letter substitutions from the input wheel to just before
-        the reflector.
-        """
+    def right_to_left_cipher(self, letter: str, prev_rotor_pos: int = 0, curr_rotor_i: int = 2) -> str:
+        """ First set of letter substitutions from the input wheel to just before the reflector. """
+
         # Base case - when all rotors have been performed their ciphers
         if curr_rotor_i < 0:
             return letter
 
         # Find index of letter on input-side
-        input_letter_i = self.rotor_reflector_wheel.index(letter)
+        input_letter_i = ord(letter) - 65
 
         # calculate index of output letter
-        curr_rotor_pos_i = self.rotor_pos[curr_rotor_i]
+        curr_rotor_pos_i = self.rotors_used[curr_rotor_i].get_rotor_pos_i()
 
-        output_letter_i = (input_letter_i +
-                           curr_rotor_pos_i -
-                           prev_rotor_pos) % 26
-        output_letter = self.rotors_used[curr_rotor_i][0][output_letter_i]
+        output_letter_i = (input_letter_i + curr_rotor_pos_i - prev_rotor_pos) % 26
+        output_letter = self.rotors_used[curr_rotor_i].get_output_letter(reg0_or_rev1=0, output_letter_i=output_letter_i)
 
         # recursive calls to go through each rotor
-        return self.right_to_left_cipher(output_letter, curr_rotor_pos_i,
-                                         curr_rotor_i - 1)
+        return self.right_to_left_cipher(output_letter, curr_rotor_pos_i, curr_rotor_i - 1)
 
-    def reflector_cipher(self, letter: str):
-        """
-        Perform substitution cipher of the output letter from the left rotor
-        to the reflector.
-        """
-        input_letter_i = self.rotor_reflector_wheel.index(letter)
-        prev_rotor_ptr = self.rotor_pos[0]  # only need to know left rotor pos
-        reflector_letter_i = (input_letter_i - prev_rotor_ptr) % 26
-        reflector_letter = self.reflector[reflector_letter_i]
+    def left_to_right_cipher(self, letter: str, prev_rotor_pos: int = 0, curr_rotor_i: int = 0) -> str:
+        """ Second set of letter substitutions from the output of the reflector to the input wheel. """
 
-        return reflector_letter
-
-    def left_to_right_cipher(self,
-                             letter: str,
-                             prev_rotor_pos: int = 0,
-                             curr_rotor_i: int = 0):
-        """
-        Second set of letter substitutions from the output of the reflector
-        to the input wheel.
-        """
         # Base case - when all rotors have been performed their ciphers
         # Now perform the cipher between right rotor and input wheel
         if curr_rotor_i > 2:
             # Find index of letter
-            input_letter_i = self.rotor_reflector_wheel.index(letter)
+            input_letter_i = ord(letter) - 65
 
             # calculate index of input letter
             letter_i = (input_letter_i - prev_rotor_pos) % 26
-            letter = self.rotor_reflector_wheel[letter_i]
+            letter = chr(letter_i + 65)
 
             return letter
 
         # Find index of letter
-        input_letter_i = self.rotor_reflector_wheel.index(letter)
+        input_letter_i = ord(letter) - 65
 
         # calculate index of input letter
-        curr_rotor_pos = self.rotor_pos[curr_rotor_i]
-        rev_output_i = (input_letter_i +
-                        curr_rotor_pos -
-                        prev_rotor_pos) % 26
-        rev_output_letter = self.rotors_used[curr_rotor_i][1][rev_output_i]
+        curr_rotor_pos = self.rotors_used[curr_rotor_i].get_rotor_pos_i()
+        rev_output_i = (input_letter_i + curr_rotor_pos - prev_rotor_pos) % 26
+        rev_output_letter = self.rotors_used[curr_rotor_i].get_output_letter(reg0_or_rev1=1, output_letter_i=rev_output_i)
 
         # recursive calls to go through each rotor
-        return self.left_to_right_cipher(rev_output_letter, curr_rotor_pos,
-                                         curr_rotor_i + 1)
+        return self.left_to_right_cipher(rev_output_letter, curr_rotor_pos, curr_rotor_i + 1)
 
     def encrypt_decrypt(self, input_text: str) -> str:
         """
@@ -259,13 +147,14 @@ class Enigma:
             self.advance_rotors()
 
             # 1st plugboard substitution
-            converted_letter = self.plugboard.plugboard_cipher(letter)
+            converted_letter = self.plugboard.plugboard_cipher(letter=letter)
 
             # 1st pass substitution through rotors
             converted_letter = self.right_to_left_cipher(converted_letter)
 
             # reflector substitution
-            converted_letter = self.reflector_cipher(converted_letter)
+            converted_letter = self.reflector.reflector_cipher(left_rotor_letter=converted_letter,
+                                                               left_rotor_pos_i=self.rotors_used[0].get_rotor_pos_i())
 
             # 2nd pass substitution through rotors
             converted_letter = self.left_to_right_cipher(converted_letter)
@@ -282,7 +171,7 @@ class Enigma:
 ##############################################################################
 # Enigma setting checks
 ##############################################################################
-def check_rotor_choices(rotor_choices: tuple):
+def check_rotor_choices(rotor_choices: tuple) -> bool:
     """
     Check if rotor_choices are valid.
 
@@ -315,7 +204,7 @@ def check_rotor_choices(rotor_choices: tuple):
     return True
 
 
-def check_plugboard_pairings(plugboard_pairings: list):
+def check_plugboard_pairings(plugboard_pairings: list) -> bool:
     """
     Check if plugboard_pairings are valid.
 
@@ -349,7 +238,7 @@ def check_plugboard_pairings(plugboard_pairings: list):
     return True
 
 
-def check_rotor_ring_settings(rotor_ring_settings: list):
+def check_rotor_ring_settings(rotor_ring_settings: list) -> bool:
     """
     Check if rotor or ring settings are valid. Also convert them from an int
     to their corresponding ASCII letters if needed.
@@ -357,6 +246,7 @@ def check_rotor_ring_settings(rotor_ring_settings: list):
     :param rotor_ring_settings: list
     :return: bool
     """
+
     # if 3 rotor rings were not set, return False
     if len(rotor_ring_settings) != 3:
         return False
@@ -379,12 +269,11 @@ def check_rotor_ring_settings(rotor_ring_settings: list):
         else:
             return False
 
-    # at this point, nothing invalid found with rotor or ring settings,
-    # return True
+    # at this point, nothing invalid found with rotor or ring settings, return True
     return True
 
 
-def check_reflector(reflector: str):
+def check_reflector(reflector: str) -> bool:
     """
     Check if reflector is valid.
 
@@ -408,11 +297,8 @@ def check_reflector(reflector: str):
     return True
 
 
-def sanitize_enigma_settings(rotor_choices: tuple,
-                             plugboard_pairings: list,
-                             initial_rotor_settings: list,
-                             ring_settings: list,
-                             reflector: str):
+def sanitize_enigma_settings(rotor_choices: tuple, plugboard_pairings: list, initial_rotor_settings: list,
+                             ring_settings: list, reflector: str) -> bool:
     """
     Check if Enigma settings are valid.
 
@@ -451,12 +337,12 @@ def sanitize_enigma_settings(rotor_choices: tuple,
 ##############################################################################
 # User input sanitization and check
 ##############################################################################
-def sanitize_input_text(input_text: str):
+def sanitize_input_text(input_text: str) -> str or bool:
     """
     Check input_text for invalid characters and only output uppercase letters
     without any empty spaces.
 
-    :return: str
+    :return: str or bool
     """
     # if no input_text received, return False
     if input_text is None:
@@ -510,12 +396,8 @@ def sanitize_input_text(input_text: str):
 #     print(output_line)
 
 
-def enigma_run(rotor_choices: tuple,
-               plugboard_pairings: list,
-               initial_rotor_settings: list,
-               ring_settings: list,
-               reflector: str,
-               input_str: str = None):
+def enigma_run(rotor_choices: tuple, plugboard_pairings: list, initial_rotor_settings: list, ring_settings: list,
+               reflector: str, input_str: str = None) -> str:
     """
     Main program function:
 
@@ -565,6 +447,8 @@ def enigma_run(rotor_choices: tuple,
 
 
 if __name__ == '__main__':
+    """ For running the program through an IDE """
+
     rotor_choices = (2, 4, 5)
     plugboard_pairings = ["AV", "BS", "CG", "DL", "FU", "HZ", "IN", "KM", "OW", "RX"]
     initial_rotor_settings = ["B", "L", "A"]  # ordering is left-middle-right rotors

@@ -7,10 +7,9 @@ class Plugboard:
     def __init__(self, settings_plugboard_pairings: tuple):
         """ Set plugboard based on received settings. """
 
-        self.settings_plugboard_pairings = settings_plugboard_pairings
         self.plugboard = dict()
 
-        for letter_pair in self.settings_plugboard_pairings:
+        for letter_pair in settings_plugboard_pairings:
             first_letter = letter_pair[0]
             second_letter = letter_pair[1]
             self.plugboard[first_letter] = second_letter

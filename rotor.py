@@ -29,7 +29,7 @@ class Rotor:
             self.rotor_outputs[i] = ring_setting_rewiring(rotor_output_str=self.rotor_outputs[i],
                                                           ring_letter=ring_setting_letter)
 
-    def get_output_letter(self, reg0_or_rev1: int, output_letter_i) -> str:
+    def get_output_letter(self, reg0_or_rev1: int, output_letter_i: int) -> str:
         """ Outputs a letter, from the regular or reserve output strings, at the desired index. """
         reg_or_rev = self.rotor_outputs[reg0_or_rev1]  # 0 is regular output, 1 is reverse output
 
@@ -59,7 +59,7 @@ def ring_setting_rewiring(rotor_output_str: str, ring_letter: str) -> str:
     dot_position = (rotor_output_str.index("A") + ring_letter_i) % 26
     shifted_str = ""
 
-    # shift up each letters in rotor_output_str
+    # shift up each letter in rotor_output_str
     for i in range(len(rotor_output_str)):
         letter_i = ord(rotor_output_str[i]) - 65
         shifted_str += chr(((letter_i + ring_letter_i) % 26) + 65)
@@ -67,7 +67,7 @@ def ring_setting_rewiring(rotor_output_str: str, ring_letter: str) -> str:
     # rotate letters in shifted rotor_output_str until ring_letter is in the index position of dot_position
     rotated_str = shifted_str
     while rotated_str[dot_position] != ring_letter:
-        last_letter = rotated_str[len(rotated_str) - 1]
+        last_letter = rotated_str[- 1]
         all_other_letters = rotated_str[:len(rotated_str) - 1]
         rotated_str = last_letter + all_other_letters
 

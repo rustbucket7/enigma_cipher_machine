@@ -13,22 +13,22 @@ class Enigma:
 
     def __init__(self,
                  settings_rotor_choices: tuple,  # (1, 2, 3)
-                 settings_plugboard_pairings: tuple,  # tuple(ab, cd, ...)
+                 settings_plugboard_pairings: tuple,  # tuple("AB", "CD", ...)
                  settings_starting_rotor_pos: tuple,  # ('X', 'X', 'X')
                  settings_ring: tuple,  # ('X', 'X', 'X')
                  settings_reflector: str):  # 'X'
 
         """ Define initial variable values of an Enigma object. """
 
-        # grab initial settings when an Enigma object is initialized
-        self.rotor_order = settings_rotor_choices  # tuple(1,2,3)
-        self.starting_rotor_pos = settings_starting_rotor_pos  # ('X', 'X', 'X')
-        self.settings_ring = settings_ring  # ('X', 'X', 'X')
+        # # grab initial settings when an Enigma object is initialized
+        # self.rotor_order = settings_rotor_choices  # tuple(1,2,3)
+        # self.starting_rotor_pos = settings_starting_rotor_pos  # ('X', 'X', 'X')
+        # self.settings_ring = settings_ring  # ('X', 'X', 'X')
 
         # setup plugboard and reflector based on initialized settings
-        self.plugboard = Plugboard(settings_plugboard_pairings)  # ex. {"EA": "GM", "GM":"EA"}
-        self.reflector = Reflector(settings_reflector)  # ex. "B"
-        self.rotors_used = self.set_rotors()  # ex. [3,1,5]
+        self.plugboard = Plugboard(settings_plugboard_pairings)
+        self.reflector = Reflector(settings_reflector)
+        self.rotors_used = self.set_rotors(settings_rotor_choices, settings_starting_rotor_pos, settings_ring)
 
     # # test methods here
     # def get_rotor_order(self):
@@ -56,7 +56,7 @@ class Enigma:
     #     return self.reflector
 
     # enigma machine methods here
-    def set_rotors(self) -> list:
+    def set_rotors(self, settings_rotor_choices: tuple, settings_starting_rotor_pos: tuple, settings_ring: tuple) -> list:
         """ Set the starting positions of the Enigma rotors and determine which rotor outputs to use as well as their
         ring setting alteration based on user settings. """
 
@@ -64,9 +64,9 @@ class Enigma:
 
         # configure each chosen rotor based on desired starting position and ring setting letter
         for i in range(3):
-            new_rotor = Rotor(rotor_chosen=self.rotor_order[i],
-                              starting_rotor_pos_letter=self.starting_rotor_pos[i],
-                              ring_setting_letter=self.settings_ring[i])
+            new_rotor = Rotor(rotor_chosen=settings_rotor_choices[i],
+                              starting_rotor_pos_letter=settings_starting_rotor_pos[i],
+                              ring_setting_letter=settings_ring[i])
             rotor_outputs_to_use.append(new_rotor)
 
         return rotor_outputs_to_use  # list of 3 Rotor objects
@@ -100,11 +100,10 @@ class Enigma:
 
         # calculate index of output letter
         curr_rotor_pos_i = self.rotors_used[curr_rotor_i].get_rotor_pos_i()
-
         output_letter_i = (input_letter_i + curr_rotor_pos_i - prev_rotor_pos) % 26
         output_letter = self.rotors_used[curr_rotor_i].get_output_letter(reg0_or_rev1=0, output_letter_i=output_letter_i)
 
-        # recursive calls to go through each rotor
+        # recursive calls to go through each rotor to get the output letter to feed into reflector
         return self.right_to_left_cipher(output_letter, curr_rotor_pos_i, curr_rotor_i - 1)
 
     def left_to_right_cipher(self, letter: str, prev_rotor_pos: int = 0, curr_rotor_i: int = 0) -> str:
@@ -118,20 +117,20 @@ class Enigma:
 
             # calculate index of input letter
             letter_i = (input_letter_i - prev_rotor_pos) % 26
-            letter = chr(letter_i + 65)
+            output_letter = chr(letter_i + 65)
 
-            return letter
+            return output_letter
 
         # Find index of letter
         input_letter_i = ord(letter) - 65
 
         # calculate index of input letter
-        curr_rotor_pos = self.rotors_used[curr_rotor_i].get_rotor_pos_i()
-        rev_output_i = (input_letter_i + curr_rotor_pos - prev_rotor_pos) % 26
+        curr_rotor_pos_i = self.rotors_used[curr_rotor_i].get_rotor_pos_i()
+        rev_output_i = (input_letter_i + curr_rotor_pos_i - prev_rotor_pos) % 26
         rev_output_letter = self.rotors_used[curr_rotor_i].get_output_letter(reg0_or_rev1=1, output_letter_i=rev_output_i)
 
-        # recursive calls to go through each rotor
-        return self.left_to_right_cipher(rev_output_letter, curr_rotor_pos, curr_rotor_i + 1)
+        # recursive calls to go through each rotor to get the output letter to feed into input wheel
+        return self.left_to_right_cipher(rev_output_letter, curr_rotor_pos_i, curr_rotor_i + 1)
 
     def encrypt_decrypt(self, input_text: str) -> str:
         """
@@ -289,7 +288,7 @@ def check_reflector(reflector: str) -> bool:
     if not isinstance(reflector, str) or reflector.isalpha() is False:
         return False
 
-    # if reflect is not 'A', 'B', or 'C', return False
+    # if reflector is not 'A', 'B', or 'C', return False
     if reflector.upper() not in ('A', 'B', 'C'):
         return False
 
@@ -348,7 +347,7 @@ def sanitize_input_text(input_text: str) -> str or bool:
     if input_text is None:
         return False
 
-    # remove all spaces from input_str
+    # remove all spaces from input_text
     input_text = "".join(input_text.split())
 
     # if after removing all empty spaces, there is no message left, return False
@@ -399,7 +398,7 @@ def sanitize_input_text(input_text: str) -> str or bool:
 def enigma_run(rotor_choices: tuple, plugboard_pairings: list, initial_rotor_settings: list, ring_settings: list,
                reflector: str, input_str: str = None) -> str:
     """
-    Main program function:
+    The program's driving function:
 
     1) Check if input string is valid
     2) Send input string to sanitize_input_text()
@@ -416,7 +415,7 @@ def enigma_run(rotor_choices: tuple, plugboard_pairings: list, initial_rotor_set
     if text is False:
         return "Bad input string. Letters only."
 
-    # if Enigma settings are valid
+    # check if Enigma settings are valid
     # if they are, initialize an enigma_machine
     if sanitize_enigma_settings(rotor_choices, plugboard_pairings, initial_rotor_settings,
                          ring_settings, reflector):
@@ -451,13 +450,13 @@ if __name__ == '__main__':
 
     rotor_choices = (2, 4, 5)
     plugboard_pairings = ["AV", "BS", "CG", "DL", "FU", "HZ", "IN", "KM", "OW", "RX"]
-    initial_rotor_settings = ["B", "L", "A"]  # ordering is left-middle-right rotors
-    ring_settings = ["B", "U", "L"]  # ordering is left-middle-right rotors
+    initial_rotor_settings = ['B', 'L', 'A']  # ordering is left-middle-right rotors
+    ring_settings = ['B', 'U', 'L']  # ordering is left-middle-right rotors
     reflector = 'B'
 
-    user_input = sanitize_input_text(input("Enter a string of letters and spaces only: "))
+    user_input = input("Enter a string of letters and spaces only: ")
     # user_input = "  "
 
-    print(enigma_run(rotor_choices, plugboard_pairings, initial_rotor_settings,
-                     ring_settings, reflector, user_input))
+    output_text = enigma_run(rotor_choices, plugboard_pairings, initial_rotor_settings, ring_settings, reflector, user_input)
+    print(output_text)
     input("...Press any key to end the program...")

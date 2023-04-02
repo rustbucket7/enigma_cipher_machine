@@ -18,7 +18,7 @@ The encrypt/decrypt process looks like this:
 
 Altogether, each letter in the input message can be changed up to 9 times.
 
-## How to Use via Command line/Terminal
+## How to Use via Command line/Terminal (to be changed)
 To encrypt a message:
 - Setup Enigma machine
 - Run the program
@@ -34,8 +34,8 @@ To decrypt a message:
 - Copy the output
 
 Setting up the Enigma machine:
-1. Open the enigma.py file in an IDE or text editor
-2. Scroll down to the bottom of the file where `if __name__ == '__main__':` is found
+1. Open the main.py file in an IDE or text editor
+2. Look for the section below the line saying `if __name__ == '__main__':`
 3. Change the following settings to suit your encryption/decryption needs:
 - rotor_choices: the order of your rotors from left to right. Requires three unique rotors to be used. Ex. (2, 1, 3).
 - plugboard_pairings: the pairs of letters that will get swapped at the plugboard. Letters can only be used once. Ex. ["GZ", "YQ", "OP", "LA"].
@@ -45,8 +45,8 @@ Setting up the Enigma machine:
 4.  Run the program using Python 3 to begin encrypting/decrypting a message
 
 ## How to Use in Another Python Program
-1. Put enigma.py into some directory usable by your Python program
-2. Import the file into your program. Ex. "from enigma import *"
+1. Put enigma.py, plugboard.py, reflector.py, and rotor.py into some directory usable by your Python program
+2. Import enigma.py into your program. Ex. "from enigma import *"
 3. Perform encrypt/decrypt with the following call:
 - enigma_run(arg1, arg2, ..., arg6)
 - - The following 6 arguments are required in the following order:
